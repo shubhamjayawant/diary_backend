@@ -3,14 +3,15 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from flask import request, jsonify
 from flask_api import status
+from flask_cors import CORS, cross_origin
 import pprint
 import json
 
 MONGODB_HOST = 'localhost'
 MONGODB_PORT = 27017
-ALLOWED_CONTENT = ['text', 'video', 'image']
 
 app = Flask(__name__)
+CORS(app)
 client = MongoClient(MONGODB_HOST, MONGODB_PORT)
 db = client['diary']
 
@@ -58,7 +59,7 @@ def getNote(noteID):
 
 def updateNote(noteID, note):
 
-    note = json.loads(note.decode('utf8').replace("'", '"'))
+    note = json.loads(note.decode('utf8'))
 
     if invalidData(note):
 
@@ -78,7 +79,7 @@ def updateNote(noteID, note):
 
 def createNote(note):
 
-    note = json.loads(note.decode('utf8').replace("'", '"'))
+    note = json.loads(note.decode('utf8'))
 
     if invalidData(note):
 
@@ -90,21 +91,7 @@ def createNote(note):
 
 def invalidData(data):
 
-    return not data or 'title' not in data or not data['title'] or 'body' not in data or invalidContent(data['body'])
-
-def invalidContent(content):
-
-    if type(content) is not list:
-
-        return True
-
-    for c in content:
-
-        if 'content_type' not in c or c['content_type'] not in ALLOWED_CONTENT or 'content' not in c or c['content'].strip() == '':
-
-            return True
-
-    return False
+    return not data or 'title' not in data or not data['title'] or 'body' not in data
 
 def getNoteList():
 
