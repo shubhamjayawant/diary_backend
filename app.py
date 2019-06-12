@@ -6,6 +6,7 @@ from flask_api import status
 from flask_cors import CORS, cross_origin
 import pprint
 import json
+import datetime
 
 MONGODB_HOST = 'localhost'
 MONGODB_PORT = 27017
@@ -43,7 +44,7 @@ def getNote(noteID):
 
     try:
 
-        result = db.notes.find_one({'_id' : ObjectId(noteID)}, {'title':1, 'body' : 1, '_id' : 0})
+        result = db.notes.find_one({'_id' : ObjectId(noteID)}, {'title':1, 'body' : 1, 'created' : 1, '_id' : 0})
 
     except:
 
@@ -60,6 +61,7 @@ def getNote(noteID):
 def updateNote(noteID, note):
 
     note = json.loads(note.decode('utf8'))
+    note["created"] = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     if invalidData(note):
 
@@ -67,7 +69,7 @@ def updateNote(noteID, note):
 
     else:
 
-        result = db.notes.find_one_and_replace({'_id': ObjectId(noteID)}, note, {'title':1, 'body' : 1, '_id' : 0})
+        result = db.notes.find_one_and_replace({'_id': ObjectId(noteID)}, note, {'title':1, 'body' : 1, 'created' : 1, '_id' : 0})
 
         if result:
 
@@ -80,6 +82,7 @@ def updateNote(noteID, note):
 def createNote(note):
 
     note = json.loads(note.decode('utf8'))
+    note["created"] = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     if invalidData(note):
 
@@ -97,9 +100,9 @@ def getNoteList():
 
     noteList = []
 
-    for note in db.notes.find({}, {'title':1}):
+    for note in db.notes.find({}, {'title':1, 'created' : 1}):
 
-        noteList.append({'id' : str(note['_id']), 'title' : note['title']})
+        noteList.append({'id' : str(note['_id']), 'title' : note['title'], 'created' : note['created']})
 
     return createResponse({'data': noteList}, 200)
 
