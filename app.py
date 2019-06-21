@@ -27,16 +27,32 @@ def notes():
 
         return getNoteList()
 
-@app.route('/notes/<string:noteID>', methods=['GET', 'PUT'])
+@app.route('/notes/<string:noteID>', methods=['GET', 'PUT', 'DELETE'])
 def noteSpecific(noteID):
 
     if request.method == 'GET':
 
         return getNote(noteID)
 
-    else:
+    elif request.method == 'PUT':
 
         return updateNote(noteID, request.data)
+
+    else:
+
+        return deleteNote(noteID)
+
+def deleteNote(noteID):
+
+    result = db.notes.delete_one({'_id': ObjectId(noteID)})
+
+    if result.deleted_count == 0:
+
+        return createResponse({'data': 'Object not found'}, 404)
+
+    else:
+
+        return getNoteList()
 
 def getNote(noteID):
 
